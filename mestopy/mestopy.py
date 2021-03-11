@@ -16,9 +16,7 @@ class DeviceObj(object):
         Attributes
         ----------
         data : Signal
-            Signal data that reprensets the inverted frequency response of
-            the device. Data can be in domain 'freq' or 'time' and will be
-            transformed if necessary.
+            Signal with the inverted frequency response of the device.
         sens : float
             Sensitivity of the device as a factor.
         name : str
