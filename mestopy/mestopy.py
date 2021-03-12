@@ -25,18 +25,59 @@ class Device(object):
         name : str
             Name of the device.
         """
-        if not isinstance(name, str):
-            raise ValueError('Device name must be string.')
-        if not (isinstance(data, Signal) or data is None):
-            raise TypeError('Input data must be type Signal or None.')
-        if not (isinstance(unit, str) or unit is None):
-            raise ValueError('Unit of sensitivity must be string or None.')
-        if not isinstance(sens, (int, float)):
-            raise ValueError('Sensitivity must be a number (int or float).')
-        self.sens = sens
         self.name = name
         self.data = data
+        self.sens = sens
         self.unit = unit
+
+    @property
+    def name(self):
+        """The name of the device"""
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        if not isinstance(name, str):
+            raise ValueError('Device name must be string.')
+        else:
+            self._name = name
+
+    @property
+    def data(self):
+        """The freqeuncy dependent data, representing the device.
+        Type Signal or None."""
+        return self._data
+
+    @data.setter
+    def data(self, data):
+        if not isinstance(data, (Signal, type(None))):
+            raise TypeError('Input data must be type Signal or None.')
+        else:
+            self._data = data
+
+    @property
+    def sens(self):
+        """The sensitivity of the device."""
+        return self._sens
+
+    @sens.setter
+    def sens(self, sens):
+        if not isinstance(sens, (int, float)):
+            raise ValueError('Sensitivity must be a number (int or float).')
+        else:
+            self._sens = sens
+
+    @property
+    def unit(self):
+        """The unit of the sensitivity."""
+        return self._unit
+
+    @unit.setter
+    def unit(self, unit):
+        if not (isinstance(unit, str) or unit is None):
+            raise ValueError('Unit of sensitivity must be string or None.')
+        else:
+            self._unit = unit
 
     @property
     def freq(self):
@@ -49,21 +90,11 @@ class Device(object):
         else:
             return self.sens
 
-    @property
-    def device_name(self):
-        """Return the name of the device as string."""
-        return self.name
-
-    @device_name.setter
-    def device_name(self, new_name):
-        """Set the name of the device."""
-        self.name = new_name
-
     def __repr__(self):
         """String representation of DeviceObj class."""
         if self.data is None:
             repr_string = (
-                f"{self.name} defined by None freq-bins, "
+                f"{self.name} defined by "
                 f"sensitivity={self.sens} unit={self.unit}\n")
         else:
             repr_string = (
@@ -105,7 +136,7 @@ class MeasurementChain(object):
         self.devices = devices
         self.comment = comment
 
-    def __find_index(self, name):
+    def _find_device_index(self, name):
         """Private method to find the index of a given device name."""
         for i, dev in enumerate(self.devices):
             if dev.name == name:
@@ -142,7 +173,7 @@ class MeasurementChain(object):
             The default is an empty string.
         """
         # check if device_data is type Signal or None
-        if not (isinstance(device_data, Signal) or device_data is None):
+        if not isinstance(device_data, (Signal, type(None))):
             raise TypeError('Input data must be type Signal or None.')
         # check if there are no devices in measurement chain
         if not self.devices == []:
@@ -162,7 +193,7 @@ class MeasurementChain(object):
         # list all ref-objects in chain
         device_names = []
         for dev in self.devices:
-            name = dev.device_name
+            name = dev.name
             device_names.append(name)
         return device_names
 
@@ -181,7 +212,7 @@ class MeasurementChain(object):
             self.devices.pop(num)
         # remove ref-object in chain by name
         elif isinstance(num, str):
-            self.remove_device(self.__find_index(num))
+            self.remove_device(self._find_device_index(num))
         else:
             raise TypeError("device to remove must be int or str")
 
@@ -207,7 +238,7 @@ class MeasurementChain(object):
         if isinstance(num, int):
             return self.devices[num].freq
         elif isinstance(num, str):
-            return self.device_freq(self.__find_index(num))
+            return self.device_freq(self._find_device_index(num))
         else:
             raise TypeError("Device must be called by int or str.")
 
@@ -217,13 +248,9 @@ class MeasurementChain(object):
         All devices (frequency response and sensitivity) are considered.
         """
         if self.devices != []:
-            resp = Signal(np.ones(int(self.devices[0].data.n_bins)),
-                          self.sampling_rate,
-                          domain='freq',
-                          fft_norm=self.devices[0].data.fft_norm,
-                          dtype=self.devices[0].data.dtype)
+            resp = 1.0
             for dev in self.devices:
-                resp = resp * dev.data * dev.sens
+                resp = dev.freq * resp
         else:
             resp = Signal(np.ones(self.sampling_rate), self.sampling_rate)
         return resp
