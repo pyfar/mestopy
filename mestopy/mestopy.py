@@ -1,4 +1,4 @@
-import numpy as np
+from scipy.signal import oaconvolve
 from pyfar import Signal
 
 
@@ -135,6 +135,7 @@ class MeasurementChain(object):
         self.sound_device = sound_device
         self.devices = devices
         self.comment = comment
+        self._freq()
 
     def _find_device_index(self, name):
         """Private method to find the index of a given device name."""
@@ -142,6 +143,22 @@ class MeasurementChain(object):
             if dev.name == name:
                 return i
         raise ValueError(f"device {name} not found")
+
+    def _freq(self):
+        """Private method to calculate the frequency response of the complete
+        measurement chain and save it to the private attribute _resp."""
+        if self.devices == []:
+            resp = 1.0
+        else:
+            resp = [[1.0]]
+            for dev in self.devices:
+                if isinstance(dev.freq, Signal):
+                    resp = oaconvolve(resp, dev.freq.time)
+                else:
+                    resp = oaconvolve(resp, [[dev.freq]])
+            resp = Signal(resp, self.sampling_rate, domain='time')
+            resp.domain = 'freq'
+        self._resp = resp
 
     def add_device(self,
                    device_name,
@@ -186,6 +203,7 @@ class MeasurementChain(object):
         new_device = Device(device_name, data=device_data,
                             sens=sens, unit=unit)
         self.devices.append(new_device)
+        self._freq()
 
     def list_devices(self):
         """Returns a list of names of all devices in the measurement chain.
@@ -215,6 +233,7 @@ class MeasurementChain(object):
             self.remove_device(self._find_device_index(num))
         else:
             raise TypeError("device to remove must be int or str")
+        self._freq()
 
     # reset complete ref-object-list
     def reset_devices(self):
@@ -223,6 +242,7 @@ class MeasurementChain(object):
         measurement chain remain unchanged.
         """
         self.devices = []
+        self._freq()
 
     # get the freq-response of specific device in measurement chain
     def device_freq(self, num):
@@ -243,17 +263,12 @@ class MeasurementChain(object):
             raise TypeError("Device must be called by int or str.")
 
     # get the freq-response of whole measurement chain as pyfar.Signal
+    @property
     def freq(self):
         """Returns the frequency response of the complete measurement chain.
         All devices (frequency response and sensitivity) are considered.
         """
-        if self.devices != []:
-            resp = 1.0
-            for dev in self.devices:
-                resp = dev.freq * resp
-        else:
-            resp = Signal(np.ones(self.sampling_rate), self.sampling_rate)
-        return resp
+        return self._resp
 
     def __repr__(self):
         """String representation of MeasurementChain class.
