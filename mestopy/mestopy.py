@@ -3,15 +3,16 @@ from pyfar import Signal
 
 
 # Class to generate ref-Objects, that can bei part of the MeasurementChain
-class DeviceObj(object):
+class Device(object):
     """Class for device in MeasurementChain.
 
     This class holds methods and properties of a device in the
-    'MeasurementChain' class.
+    'MeasurementChain' class. A device can be e.g., a sound card or a
+    pre-amplifier, described by a frequency response and/or sensitivity.
     """
 
-    def __init__(self, data, sens=1, name=''):
-        """Init DeviceObj with data.
+    def __init__(self, name, data=None, sens=1, unit=None):
+        """Init Device with data.
 
         Attributes
         ----------
@@ -24,16 +25,29 @@ class DeviceObj(object):
         name : str
             Name of the device.
         """
+        if not isinstance(name, str):
+            raise ValueError('Device name must be string.')
+        if not (isinstance(data, Signal) or data is None):
+            raise TypeError('Input data must be type Signal or None.')
+        if not (isinstance(unit, str) or unit is None):
+            raise ValueError('Unit of sensitivity must be string or None.')
+        if not isinstance(sens, (int, float)):
+            raise ValueError('Sensitivity must be a number (int or float).')
         self.sens = sens
         self.name = name
         self.data = data
+        self.unit = unit
 
     @property
     def freq(self):
-        """Return the frequency responses of the device, multiplied by
-        the sensitivity.
+        """Returns either a signal, representing the inverted frequency
+        response of the device multiplied by the sensitivity or the
+        sensitivity as scalar, when the device has no freqeuncy response.
         """
-        return self.data * self.sens
+        if self.data is not None:
+            return self.data * self.sens
+        else:
+            return self.sens
 
     @property
     def device_name(self):
@@ -47,13 +61,18 @@ class DeviceObj(object):
 
     def __repr__(self):
         """String representation of DeviceObj class."""
-        repr_string = (
-            f"{self.name} defined by {self.data.n_bins} freq-bins, "
-            f"sensitivity={self.sens}\n")
+        if self.data is None:
+            repr_string = (
+                f"{self.name} defined by None freq-bins, "
+                f"sensitivity={self.sens} unit={self.unit}\n")
+        else:
+            repr_string = (
+                f"{self.name} defined by {self.data.n_bins} freq-bins, "
+                f"sensitivity={self.sens} unit={self.unit}\n")
         return repr_string
 
 
-# Class for MeasurementChain as frame for RefObjs and calibration
+# Class for MeasurementChain as frame for Devices
 class MeasurementChain(object):
     """Class for complete measurement chain.
 
@@ -67,7 +86,7 @@ class MeasurementChain(object):
                  sound_device=None,
                  devices=[],
                  comment=None):
-        """Init measurement chain with rampling rate.
+        """Init measurement chain with sampling rate.
 
         Attributes
         ----------
@@ -86,10 +105,19 @@ class MeasurementChain(object):
         self.devices = devices
         self.comment = comment
 
+    def __find_index(self, name):
+        """Private method to find the index of a given device name."""
+        for i, dev in enumerate(self.devices):
+            if dev.name == name:
+                return i
+        raise ValueError(f"device {name} not found")
+
     def add_device(self,
+                   device_name,
                    device_data=None,
                    sens=1,
-                   device_name=''):
+                   unit=None
+                   ):
         """Adds a new device to the measurement chain.
 
         Attributes
@@ -113,34 +141,20 @@ class MeasurementChain(object):
             The name of the new device to add to the masurement chain.
             The default is an empty string.
         """
-        if device_data is None:
-            device_data = Signal(np.full(int(self.sampling_rate/2), 1.0),
-                                 self.sampling_rate,
-                                 domain='freq')
-        # check if ref_signal is a pyfar.Signal, if not raise Error
-        if not isinstance(device_data, Signal):
-            raise TypeError('Input data must be of type: Signal.')
+        # check if device_data is type Signal or None
+        if not (isinstance(device_data, Signal) or device_data is None):
+            raise TypeError('Input data must be type Signal or None.')
         # check if there are no devices in measurement chain
-        if self.devices == []:
-            # add ref-measurement to chain
-            device_data.domain = 'freq'
-            new_device = DeviceObj(device_data,
-                                   sens,
-                                   device_name)
-            self.devices.append(new_device)
-        else:
-            # check if n_bins of all devices is the same
-            if not self.devices[0].data.n_bins == device_data.n_bins:
-                raise ValueError("ref_signal has wrong n_bins")
+        if not self.devices == []:
             # check if sampling_rate of new device and MeasurementChain
             # is the same
-            if not self.sampling_rate == device_data.sampling_rate:
-                raise ValueError("ref_signal has wrong samping_rate")
-            # add device to chain
-            new_device = DeviceObj(device_data,
-                                   sens,
-                                   device_name)
-            self.devices.append(new_device)
+            if device_data is not None:
+                if not self.sampling_rate == device_data.sampling_rate:
+                    raise ValueError("ref_signal has wrong samping_rate")
+        # add device to chain
+        new_device = Device(device_name, data=device_data,
+                            sens=sens, unit=unit)
+        self.devices.append(new_device)
 
     def list_devices(self):
         """Returns a list of names of all devices in the measurement chain.
@@ -164,20 +178,10 @@ class MeasurementChain(object):
         """
         # remove ref-object in chain position num
         if isinstance(num, int):
-            front = self.devices[:num]
-            back = self.devices[num+1:]
-            for i in back:
-                front.append(i)
-            self.devices = front
+            self.devices.pop(num)
         # remove ref-object in chain by name
         elif isinstance(num, str):
-            i = 0
-            for dev in self.devices:
-                if dev.name == num:
-                    self.remove_device(i)
-                    return
-                i = i + 1
-            raise ValueError(f"device {num} not found")
+            self.remove_device(self.__find_index(num))
         else:
             raise TypeError("device to remove must be int or str")
 
@@ -201,18 +205,11 @@ class MeasurementChain(object):
         in device list as int.
         """
         if isinstance(num, int):
-            dev = self.devices[num].data * self.devices[num].sens
-            dev.domain = 'freq'
-            return dev
+            return self.devices[num].freq
         elif isinstance(num, str):
-            i = 0
-            for dev in self.devices:
-                if dev.name == num:
-                    return self.device_freq(i)
-                i = i + 1
-            raise ValueError(f"device {num} not found")
+            return self.device_freq(self.__find_index(num))
         else:
-            raise TypeError("device to remove must be int or str")
+            raise TypeError("Device must be called by int or str.")
 
     # get the freq-response of whole measurement chain as pyfar.Signal
     def freq(self):
@@ -237,8 +234,6 @@ class MeasurementChain(object):
         repr_string = (
             f"measurement chain with {len(self.devices)} devices "
             f"@ {self.sampling_rate} Hz sampling rate.\n")
-        i = 1
-        for dev in self.devices:
-            repr_string = f"{repr_string}# {i}: {dev}"
-            i += 1
+        for i, dev in enumerate(self.devices):
+            repr_string = f"{repr_string}# {i:{2}}: {dev}"
         return repr_string
