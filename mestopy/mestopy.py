@@ -173,8 +173,8 @@ class MeasurementChain(object):
         self._resp = resp
 
     def add_device(self,
-                   device_name,
-                   device_data=None,
+                   name,
+                   data=None,
                    sens=1,
                    unit=None
                    ):
@@ -184,23 +184,23 @@ class MeasurementChain(object):
 
         Attributes
         ----------
-        device_name : str
-        device_data : pyfar.Signal, optional
+        name : str
+        data : pyfar.Signal, optional
         sens : float, optional
         unit : str, optional
         """
         # check if device_data is type Signal or None
-        if not isinstance(device_data, (Signal, type(None))):
+        if not isinstance(data, (Signal, type(None))):
             raise TypeError('Input data must be type Signal or None.')
         # check if there are no devices in measurement chain
         if not self.devices == []:
             # check if sampling_rate of new device and MeasurementChain
             # is the same
-            if device_data is not None:
-                if not self.sampling_rate == device_data.sampling_rate:
+            if data is not None:
+                if not self.sampling_rate == data.sampling_rate:
                     raise ValueError("ref_signal has wrong samping_rate")
         # add device to chain
-        new_device = Device(device_name, data=device_data,
+        new_device = Device(name, data=data,
                             sens=sens, unit=unit)
         self.devices.append(new_device)
         self._freq()
