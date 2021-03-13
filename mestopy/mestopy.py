@@ -16,14 +16,26 @@ class Device(object):
 
         Attributes
         ----------
-        data : Signal
-            Signal data that reprensets the inverted frequency response of
-            the device. Data can be in domain 'freq' or 'time' and will be
-            transformed if necessary.
-        sens : float
-            Sensitivity of the device as a factor.
         name : str
             Name of the device.
+        data : Signal
+            Signal data that reprensets the inversed frequency response of
+            the device. Data can be in domain 'freq' or 'time' and will be
+            transformed if necessary. The default is None, in this case a
+            perfect flat frequency response is assumed and only sensitivity as
+            a factor is applied.
+            Caution: Make sure to use frequency responses without artefacts,
+            as they will influence the quality of compensations calculated with
+            the measurement chain. Most ideal this should be regularized
+            inversed frequency responses.
+        sens : float, optional
+            Sensitivity of the device as a factor. If neither device_data nor
+            sens is given, add_device generates a device that has no effect to
+            the measurement chain as it has no frequency response and a
+            sesitivity (factor) default of 1.
+        unit : str, optional
+            The units of the sensitivity. Basically a string to describe what
+            kind of units the sensitivity refers to, e.g., mV/Pa.
         """
         self.name = name
         self.data = data
@@ -91,7 +103,7 @@ class Device(object):
             return self.sens
 
     def __repr__(self):
-        """String representation of DeviceObj class."""
+        """String representation of Device class."""
         if self.data is None:
             repr_string = (
                 f"{self.name} defined by "
@@ -107,9 +119,9 @@ class Device(object):
 class MeasurementChain(object):
     """Class for complete measurement chain.
 
-    This class that holds methods and properties of all devices in the
+    This class holds methods and properties of all devices in the
     measurement chain. It can include a single or multiple devices from
-    'DeviceObj' class.
+    'Device' class.
     """
 
     def __init__(self,
@@ -168,26 +180,14 @@ class MeasurementChain(object):
                    ):
         """Adds a new device to the measurement chain.
 
+        Refer to the documentation of Device class.
+
         Attributes
         ----------
-        device_data : Signal, optional
-            Signal data that reprensets the inverted frequency response of the
-            device to add. The default is None, in this case a perfect flat
-            frequency response is assumed and only sensitivity as
-            a factor is applied.
-            Caution: Make sure to use frequency responses without artefacts,
-            as they will influence the quality of compensations calculated with
-            the measurement chain. Most ideal this should be regularized
-            inverted frequency responses. Data can be in domain 'freq' or
-            'time' and will be transformed if necessary.
+        device_name : str
+        device_data : pyfar.Signal, optional
         sens : float, optional
-            Sensitivity of the device as a factor. If neither device_data nor
-            sens is given, add_device generates a device that has no effect to
-            the measurement chain as it has no frequency response and a
-            sesitivity (factor) of 1.
-        device_name : str, optional
-            The name of the new device to add to the masurement chain.
-            The default is an empty string.
+        unit : str, optional
         """
         # check if device_data is type Signal or None
         if not isinstance(device_data, (Signal, type(None))):
@@ -222,8 +222,8 @@ class MeasurementChain(object):
         Attributes
         ----------
         num : int or str
-        Identifier for device to remove. Device can be found by name as string
-        or by number in device list as int.
+            Identifier for device to remove. Device can be found by name as
+            string or by number in device list as int.
         """
         # remove ref-object in chain position num
         if isinstance(num, int):
@@ -252,8 +252,8 @@ class MeasurementChain(object):
         Attributes
         ----------
         num : int or str
-        Identifier for device, can be name as string or by number
-        in device list as int.
+            Identifier for device, can be name as string or by number
+            in device list as int.
         """
         if isinstance(num, int):
             return self.devices[num].freq
