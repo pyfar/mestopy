@@ -11,11 +11,14 @@ import numpy.testing as npt
 
 
 def test_Device_init():
+    """Test to init Device without optinal parameters."""
     dev = Device('dev1')
     assert isinstance(dev, Device)
 
 
 def test_Device_default_parameter():
+    """Test the default attributes after
+    init Device without optinal parameters."""
     dev = Device('dev1')
     assert dev.name == 'dev1'
     assert dev.data is None
@@ -24,6 +27,7 @@ def test_Device_default_parameter():
 
 
 def test_Device_name():
+    """Test name setter and getter of Device class."""
     dev = Device('dev1')
     assert dev.name == 'dev1'
     dev.name = 'dev2'
@@ -31,6 +35,8 @@ def test_Device_name():
 
 
 def test_Device_data():
+    """Test data setter and getter of Device class
+    with signal_stub."""
     dev = Device('dev1')
     assert dev.data is None
     time = [1, 0, 0, 0, 0, 0, 0, 0]
@@ -44,6 +50,7 @@ def test_Device_data():
 
 
 def test_Device_sens():
+    """Test sens setter and getter of Device class."""
     dev = Device('dev1')
     assert dev.sens == 1
     dev.sens = 0.3
@@ -51,6 +58,7 @@ def test_Device_sens():
 
 
 def test_Device_unit():
+    """Test unit setter and getter of Device class."""
     dev = Device('dev1')
     assert dev.unit is None
     dev.unit = 'mV/Pa'
@@ -58,6 +66,7 @@ def test_Device_unit():
 
 
 def test_Device_freq():
+    """Test freq getter of Device init with and without a Signal."""
     dev = Device('dev1')
     assert dev.freq == 1
     time = [1, 0, 0, 0, 0, 0, 0, 0]
@@ -71,11 +80,14 @@ def test_Device_freq():
 
 
 def test_MeasurementChain_init():
+    """Test to init MeasurementChain without optinal parameters."""
     chain = MeasurementChain(44100)
     assert isinstance(chain, MeasurementChain)
 
 
 def test_MeasurementChain_default_paramerter():
+    """Test the default attributes after init
+    MeasurementChain without optinal parameters."""
     chain = MeasurementChain(44100)
     assert chain.devices == []
     assert chain.freq == 1.0
@@ -85,6 +97,7 @@ def test_MeasurementChain_default_paramerter():
 
 
 def test_MeasurementChain_add_device():
+    """Test add_device method of MeasurementChain class."""
     chain = MeasurementChain(44100)
     assert len(chain.devices) == 0
     chain.add_device('dev1')
@@ -94,6 +107,8 @@ def test_MeasurementChain_add_device():
 
 
 def test_MeasurementChain__find_device_index():
+    """Test private _find_device_index method of
+    MeasurementChain class."""
     chain = MeasurementChain(44100)
     chain.add_device('dev1')
     chain.add_device('dev2')
@@ -102,6 +117,7 @@ def test_MeasurementChain__find_device_index():
 
 
 def test_MeasurementChain__freq():
+    """Test private _freq method of MeasurementChain class."""
     chain = MeasurementChain(44100)
     assert chain._resp == 1.0
     chain.add_device('dev1', sens=2.0)
@@ -111,6 +127,7 @@ def test_MeasurementChain__freq():
 
 
 def test_MeasurementChain_list_devices():
+    """Test list_devices method of MeasurementChain class."""
     chain = MeasurementChain(44100)
     assert chain.list_devices() == []
     chain.add_device('dev1')
@@ -120,6 +137,8 @@ def test_MeasurementChain_list_devices():
 
 
 def test_MeasurementChain_remove_device():
+    """Test remove_device method of MeasurementChain class.
+    Test with nuber and name as argument."""
     chain = MeasurementChain(44100)
     chain.add_device('dev1')
     chain.add_device('dev2')
@@ -133,6 +152,7 @@ def test_MeasurementChain_remove_device():
 
 
 def test_MeasurementChain_reset_devices():
+    """Test reset_devices method of MeasurementChain class."""
     chain = MeasurementChain(44100)
     chain.add_device('dev1')
     chain.add_device('dev2')
@@ -142,6 +162,9 @@ def test_MeasurementChain_reset_devices():
 
 
 def test_MeasurementChain_device_freq():
+    """Test device_freq method of MeasurementChain class with
+    devices init with only sens, but no freq-data.
+    Test with nuber and name as argument."""
     chain = MeasurementChain(44100)
     chain.add_device('dev1', sens=1.0)
     chain.add_device('dev2', sens=2.0)
@@ -153,6 +176,7 @@ def test_MeasurementChain_device_freq():
 
 
 def test_MeasurementChain_freq():
+    """Test freq getter of MeasurementChain class with pyfar.Signal."""
     freq = [1, 1, 1, 1]
     sampling_rate = 44100
     signal = Signal(freq, sampling_rate, domain='freq')
