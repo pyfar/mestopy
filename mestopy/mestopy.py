@@ -127,7 +127,7 @@ class MeasurementChain(object):
     def __init__(self,
                  sampling_rate,
                  sound_device=None,
-                 devices=[],
+                 devices=None,
                  comment=None):
         """Init measurement chain with sampling rate.
 
@@ -145,8 +145,11 @@ class MeasurementChain(object):
         """
         self.sampling_rate = sampling_rate
         self.sound_device = sound_device
-        self.devices = devices
         self.comment = comment
+        if isinstance(devices, type(None)):
+            self.devices = []
+        else:
+            self.devices = devices
         self._freq()
 
     def _find_device_index(self, name):
