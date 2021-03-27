@@ -196,7 +196,7 @@ class MeasurementChain(object):
             # is the same
             if data is not None:
                 if not self.sampling_rate == data.sampling_rate:
-                    raise ValueError("ref_signal has wrong samping_rate")
+                    raise ValueError("Sampling rate of the new device does not agree with the measurement chain.")
         # add device to chain
         new_device = Device(name, data=data,
                             sens=sens, unit=unit)
