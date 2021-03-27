@@ -134,8 +134,7 @@ class MeasurementChain(object):
         sound_device : int
             Number to identify the sound device used. The default is None.
         devices : list
-            A list of instances from 'DeviceObj' class. The default is an
-            empty list.
+            A list of Device objects. The default is an empty list.
         comment : str
             A comment related to the measurement chain. The default is None.
         """
