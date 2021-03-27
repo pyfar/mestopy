@@ -89,9 +89,8 @@ class Device(object):
 
     @property
     def freq(self):
-        """Returns either a signal, representing the inverted frequency
-        response of the device multiplied by the sensitivity or the
-        sensitivity as scalar, when the device has no freqeuncy response.
+        """Return the inverted frequency multiplied by the sensitivity as a signal,
+            or the sensitivity as scalar, when the device has no frequency response.
         """
         if self.data is not None:
             return self.data * self.sens
