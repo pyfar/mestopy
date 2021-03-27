@@ -145,6 +145,14 @@ class MeasurementChain(object):
         if isinstance(devices, type(None)):
             self.devices = []
         else:
+            for dev in devices:
+                if not isinstance(dev, Device):
+                    raise TypeError('Input data must be type Device.')
+                if dev.data is None:
+                    continue
+                if not dev.data.sampling_rate == self.sampling_rate:
+                    raise ValueError("Sampling rate of device does not agree "
+                                     "with the measurement chain.")
             self.devices = devices
         self._freq()
 
