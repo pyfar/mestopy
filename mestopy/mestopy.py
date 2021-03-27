@@ -20,11 +20,13 @@ class Device(object):
             Name of the device.
         data : Signal, None, optional
             Signal data that reprensets the inversed frequency response of
-            the device. Data can be in domain 'freq' or 'time' and will be
-            transformed if necessary. The default is None, in this case a
-            perfect flat frequency response is assumed and only sensitivity as
-            a factor is applied.
-            Caution: Avoid large gains in the frequency responses because they will boost measurement noise and might cause numerical instabilities. One possibility to avoid this is to use regularized inversion.
+            the device. The default is None, in this case a perfect flat
+            frequency response is assumed and only sensitivity as a factor
+            is applied.
+            Caution: Avoid large gains in the frequency responses because
+            they will boost measurement noise and might cause numerical
+            instabilities. One possibility to avoid this is to use
+            regularized inversion.
         sens : float, optional
             Sensitivity of the device as a factor. If neither device_data nor
             sens is given, add_device generates a device that has no effect to
@@ -52,8 +54,7 @@ class Device(object):
 
     @property
     def data(self):
-        """The freqeuncy dependent data, representing the device.
-        Type Signal or None."""
+        """The freqeuncy dependent data, representing the device."""
         return self._data
 
     @data.setter
@@ -90,7 +91,8 @@ class Device(object):
     @property
     def freq(self):
         """Return the inverted frequency multiplied by the sensitivity as a signal,
-            or the sensitivity as scalar, when the device has no frequency response.
+            or the sensitivity as scalar, when the device has no frequency
+            response.
         """
         if self.data is not None:
             return self.data * self.sens
@@ -195,7 +197,8 @@ class MeasurementChain(object):
             # is the same
             if data is not None:
                 if not self.sampling_rate == data.sampling_rate:
-                    raise ValueError("Sampling rate of the new device does not agree with the measurement chain.")
+                    raise ValueError("Sampling rate of the new device does"
+                                     "not agree with the measurement chain.")
         # add device to chain
         new_device = Device(name, data=data,
                             sens=sens, unit=unit)
