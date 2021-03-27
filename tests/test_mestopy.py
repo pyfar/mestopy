@@ -3,8 +3,6 @@
 """Tests for `mestopy` package."""
 
 from mestopy.mestopy import Device, MeasurementChain
-
-from pyfar.testing.stub_utils import signal_stub
 from pyfar import Signal
 
 import numpy.testing as npt
@@ -34,19 +32,14 @@ def test_Device_name():
     assert dev.name == 'dev2'
 
 
-def test_Device_data():
+def test_Device_data(flat_freq):
     """Test data setter and getter of Device class
     with signal_stub."""
     dev = Device('dev1')
     assert dev.data is None
-    time = [1, 0, 0, 0, 0, 0, 0, 0]
-    freq = [1, 1, 1, 1]
-    sampling_rate = 44100
-    fft_norm = 'none'
-    signal = signal_stub(time, freq, sampling_rate, fft_norm)
-    dev.data = signal
+    dev.data = flat_freq
     assert isinstance(dev.data, Signal)
-    assert dev.data == signal
+    assert dev.data == flat_freq
 
 
 def test_Device_sens():
@@ -65,17 +58,12 @@ def test_Device_unit():
     assert dev.unit == 'mV/Pa'
 
 
-def test_Device_freq():
+def test_Device_freq(flat_freq):
     """Test freq getter of Device init with and without a Signal."""
     dev = Device('dev1')
     assert dev.freq == 1
-    time = [1, 0, 0, 0, 0, 0, 0, 0]
-    freq = [1, 1, 1, 1]
-    sampling_rate = 44100
-    fft_norm = 'none'
-    signal = signal_stub(time, freq, sampling_rate, fft_norm)
-    dev = Device('dev1', signal)
-    assert isinstance(dev.freq, type(signal * 1.0))
+    dev = Device('dev1', flat_freq)
+    assert isinstance(dev.freq, type(flat_freq * 1.0))
     assert dev.freq == dev.data * dev.sens
 
 
