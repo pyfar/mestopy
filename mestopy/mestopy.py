@@ -116,8 +116,8 @@ class MeasurementChain(object):
     """Class for complete measurement chain.
 
     This class holds methods and properties of all devices in the
-    measurement chain. It can include a single or multiple devices from
-    'Device' class.
+    measurement chain. It can include a single or multiple objects of
+    the Device class.
     """
 
     def __init__(self,
