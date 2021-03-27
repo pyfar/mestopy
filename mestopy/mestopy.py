@@ -18,7 +18,7 @@ class Device(object):
         ----------
         name : str
             Name of the device.
-        data : Signal
+        data : Signal, None, optional
             Signal data that reprensets the inversed frequency response of
             the device. Data can be in domain 'freq' or 'time' and will be
             transformed if necessary. The default is None, in this case a
