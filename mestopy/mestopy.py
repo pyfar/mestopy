@@ -31,8 +31,7 @@ class Device(object):
             the measurement chain as it has no frequency response and a
             sesitivity (factor) default of 1.
         unit : str, optional
-            The units of the sensitivity. Basically a string to describe what
-            kind of units the sensitivity refers to, e.g., mV/Pa.
+            The phyiscal unit of the device, e.g., mV/Pa.
         """
         self.name = name
         self.data = data
