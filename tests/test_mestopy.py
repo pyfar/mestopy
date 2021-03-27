@@ -2,7 +2,7 @@
 
 """Tests for `mestopy` package."""
 
-from mestopy.mestopy import Device, MeasurementChain
+from mestopy import Device, MeasurementChain
 from pyfar import Signal
 
 import numpy.testing as npt
