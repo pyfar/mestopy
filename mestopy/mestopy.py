@@ -24,10 +24,7 @@ class Device(object):
             transformed if necessary. The default is None, in this case a
             perfect flat frequency response is assumed and only sensitivity as
             a factor is applied.
-            Caution: Make sure to use frequency responses without artefacts,
-            as they will influence the quality of compensations calculated with
-            the measurement chain. Most ideal this should be regularized
-            inversed frequency responses.
+            Caution: Avoid large gains in the frequency responses because they will boost measurement noise and might cause numerical instabilities. One possibility to avoid this is to use regularized inversion.
         sens : float, optional
             Sensitivity of the device as a factor. If neither device_data nor
             sens is given, add_device generates a device that has no effect to
